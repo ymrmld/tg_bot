@@ -13,9 +13,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
-TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN', default='AAVcF8hAAYckQAAAADZoors0O7kVwRTuXuKBjB3Ag')
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN', default='5905167654:MmaDLXZ37WLwvaBHnWFjoo174')
+TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID', default=1234567890)
 ENDPOINT = os.getenv('ENDPOINT')
 RETRY_PERIOD = 600
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
