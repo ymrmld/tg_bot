@@ -71,6 +71,7 @@ def send_message(bot, message):
 def get_api_answer(timestamp):
     """Запрос к эндпоинту, ответ API."""
     params = {'from_date': timestamp}
+    bot = telegram.Bot(token=TELEGRAM_TOKEN)
     try:
         response = requests.get(
             ENDPOINT,
@@ -110,6 +111,7 @@ def parse_status(homework):
     """Проверить статус работы в ответе сервера."""
     homework_name = homework.get('homework_name')
     status = homework.get('status')
+    bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
     if homework_name is None:
         logger.error(f'Отсутствует ключ {homework_name}.')
@@ -130,7 +132,7 @@ def parse_status(homework):
 def main():
     """Основная логика работы бота."""
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    timestamp = 0
+    timestamp = int(time.time())
 
     while check_tokens():
         try:
@@ -149,7 +151,7 @@ def main():
             time.sleep(RETRY_PERIOD)
 
         finally:
-            timestamp = 0
+            timestamp = int(time.time())
             time.sleep(RETRY_PERIOD)
 
 
