@@ -3,11 +3,11 @@ class NegativeValue(Exception):
 
 
 class NoKeys(Exception):
-    ...
+    pass
 
 
 class NotFoundStatuse(Exception):
-    ...
+    pass
 
 
 class Negative(Exception):
