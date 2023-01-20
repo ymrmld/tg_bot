@@ -1,20 +1,20 @@
 import datetime as dt
+import json
 import logging
 import os
 import sys
-import exceptions
-import json
-
+import time
 from http import HTTPStatus
+
 import requests
 import telegram
-from telegram.ext import Updater
-import time
-
 from dotenv import load_dotenv
+
+import exceptions
 
 load_dotenv()
 
+#Это не реальные токены
 PRACTICUM_TOKEN = os.getenv(
     'PRACTICUM_TOKEN',
     default='AAVcF8hAAYckQAAAADZoors0O7kVwRTuXuKBjB3Ag'
@@ -37,7 +37,6 @@ HOMEWORK_VERDICTS = {
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
 }
 
-updater = Updater(token=TELEGRAM_TOKEN)
 logging.basicConfig(
     level=logging.DEBUG,
     filename='main.log',
@@ -51,16 +50,8 @@ logger.addHandler(handler)
 
 def check_tokens():
     """Проверка доступности переменных."""
-    chek = {
-        'PRACTICUM_TOKEN': PRACTICUM_TOKEN,
-        'TELEGRAM_TOKEN': TELEGRAM_TOKEN,
-        'TELEGRAM_CHAT_ID': TELEGRAM_CHAT_ID
-    }
+    chek = [PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID]
     cheks = all(chek)
-
-    for che in chek:
-        if chek[che] is None:
-            cheks = False
 
     if not cheks:
         logger.critical('Ошибка импорта токенов.')
@@ -144,11 +135,12 @@ def main():
         sys.exit()
 
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    timestamp = int(time.time()) - SECONDS_FOR_CHANGE
+    current_timestamp = int(time.time()) - SECONDS_FOR_CHANGE
+    error_save = ''
 
     while True:
         try:
-            response = get_api_answer(timestamp)
+            response = get_api_answer(current_timestamp)
             start = dt.datetime.now()
             homeworks = check_response(response)
             logger.info(f'Получили список работ {homeworks}')
@@ -157,15 +149,16 @@ def main():
                 send_message(bot, parse_status(homeworks[0]))
             else:
                 logger.debug('Нет нового статуса')
-            ERROR = ''
-            timestamp = start.timestamp()
+            error_save = ''
+            current_timestamp = response['current_date']
 
         except Exception as error:
             logger.error(f'Сбой в работе программы: {error}')
-            if ERROR == error:
-                ERROR = error
-            else:
+
+            if error_save != error:
                 send_message(bot, f'Сбой в работе программы: {error}')
+                error_save = error
+                
         finally:
             time.sleep(RETRY_PERIOD)
 
