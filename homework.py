@@ -14,7 +14,6 @@ import exceptions
 
 load_dotenv()
 
-#Это не реальные токены
 PRACTICUM_TOKEN = os.getenv(
     'PRACTICUM_TOKEN',
     default='AAVcF8hAAYckQAAAADZoors0O7kVwRTuXuKBjB3Ag'
@@ -141,7 +140,6 @@ def main():
     while True:
         try:
             response = get_api_answer(current_timestamp)
-            start = dt.datetime.now()
             homeworks = check_response(response)
             logger.info(f'Получили список работ {homeworks}')
 
@@ -158,7 +156,7 @@ def main():
             if error_save != error:
                 send_message(bot, f'Сбой в работе программы: {error}')
                 error_save = error
-                
+
         finally:
             time.sleep(RETRY_PERIOD)
 
