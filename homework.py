@@ -14,7 +14,6 @@ import exceptions
 
 load_dotenv()
 
-#Это не реальные токены
 PRACTICUM_TOKEN = os.getenv(
     'PRACTICUM_TOKEN',
     default='AAVcF8hAAYckQAAAADZoors0O7kVwRTuXuKBjB3Ag'
@@ -93,7 +92,9 @@ def get_api_answer(timestamp):
         response = response.json()
     except json.decoder.JSONDecodeError:
         logger.error('Ответ сервера не может быть преобразован в JSON.')
-        raise json.JSONDecodeError('Ответ сервера не может быть преобразован в JSON.')
+        raise json.JSONDecodeError(
+            'Ответ сервера не может быть преобразован в JSON.'
+        )
     return response
 
 
@@ -162,7 +163,7 @@ def main():
             if error_save != error:
                 send_message(bot, f'Сбой в работе программы: {error}')
                 error_save = error
-                
+
         finally:
             time.sleep(RETRY_PERIOD)
 
