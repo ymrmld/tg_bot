@@ -1,3 +1,4 @@
+import datetime as dt
 import json
 import logging
 import os
@@ -13,6 +14,7 @@ import exceptions
 
 load_dotenv()
 
+#Это не реальные токены
 PRACTICUM_TOKEN = os.getenv(
     'PRACTICUM_TOKEN',
     default='AAVcF8hAAYckQAAAADZoors0O7kVwRTuXuKBjB3Ag'
@@ -27,7 +29,7 @@ ENDPOINT = os.getenv(
     default='https://practicum.yandex.ru/api/user_api/homework_statuses/'
 )
 RETRY_PERIOD = 600
-SECONDS_FOR_CHANGE = 123
+SECONDS_FOR_CHANGE = 50
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 HOMEWORK_VERDICTS = {
     'approved': 'Работа проверена: ревьюеру всё понравилось. Ура!',
@@ -48,14 +50,14 @@ logger.addHandler(handler)
 
 def check_tokens():
     """Проверка доступности переменных."""
-    chek = [PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID]
-    cheks = all(chek)
+    chek_token = [PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID]
+    cheks = all(chek_token)
 
     if not cheks:
         logger.critical('Ошибка импорта токенов.')
-        raise exceptions.NegativeValue('Ошибка импорта токенов.')
+        return False
 
-    return cheks
+    return True
 
 
 def send_message(bot, message):
@@ -91,6 +93,7 @@ def get_api_answer(timestamp):
         response = response.json()
     except json.decoder.JSONDecodeError:
         logger.error('Ответ сервера не может быть преобразован в JSON.')
+        raise json.JSONDecodeError('Ответ сервера не может быть преобразован в JSON.')
     return response
 
 
@@ -139,6 +142,7 @@ def main():
     while True:
         try:
             response = get_api_answer(current_timestamp)
+            start = dt.datetime.now()
             homeworks = check_response(response)
             logger.info(f'Получили список работ {homeworks}')
 
@@ -147,7 +151,10 @@ def main():
             else:
                 logger.debug('Нет нового статуса')
             error_save = ''
-            current_timestamp = response['current_date']
+            if response['current_date'] is None:
+                current_timestamp = start.timestamp() - SECONDS_FOR_CHANGE
+            else:
+                current_timestamp = response['current_date']
 
         except Exception as error:
             logger.error(f'Сбой в работе программы: {error}')
@@ -155,7 +162,7 @@ def main():
             if error_save != error:
                 send_message(bot, f'Сбой в работе программы: {error}')
                 error_save = error
-
+                
         finally:
             time.sleep(RETRY_PERIOD)
 
